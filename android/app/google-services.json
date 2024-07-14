@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "286570350752",
+    "project_id": "tinyhealer-30c94",
+    "storage_bucket": "tinyhealer-30c94.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:286570350752:android:5ec0911a1c5c58c7b621c5",
+        "android_client_info": {
+          "package_name": "com.tinyhealer.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "286570350752-78dnmcqp4k36jp55e1kr1bffko16fp4d.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.tinyhealer.app",
+            "certificate_hash": "3fdd6a5671fb6ad1bd6952d12da812a231367510"
+          }
+        },
+        {
+          "client_id": "286570350752-fo1bd57ucpeue8gudljamefcmarsh0uo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyChTMWwR85OrVkwMcbF8pHzw-tAkaw9464"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "286570350752-fo1bd57ucpeue8gudljamefcmarsh0uo.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "286570350752-cgjnskvjfhdf3uobcjk2jfutjemeps43.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.tinyhealer"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,4 @@
+analyzer:
+  errors:
+    sized_box_for_whitespace: ignore
+include: package:flutter_lints/flutter.yaml

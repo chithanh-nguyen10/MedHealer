@@ -112,7 +112,7 @@ class _LoginPageState extends State<LoginPage> {
 
               // Welcome back
               Text(
-                'Chào mừng đến với TinyHealer',
+                'Chào mừng đến với MedHealer',
                 style: TextStyle(
                   color: const Color(0xff525254),
                   fontSize: currentWidth >= 600 ? 26 + 26 * ((currentWidth - 600)/600)  : 26,

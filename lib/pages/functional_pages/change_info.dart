@@ -17,8 +17,8 @@ class _ChangeInfoState extends State<ChangeInfo> {
   final emailController = TextEditingController(text: globals.email);
   final DateTime now = DateTime.now();
   List<String> extractDate = [];
-  List<String> items = ["Male", "Female"];
-  String? selectedItem = "Male";
+  List<String> items = ["Nam", "Nữ"];
+  String? selectedItem = "Nam";
 
   @override
   void initState() {
@@ -90,7 +90,7 @@ class _ChangeInfoState extends State<ChangeInfo> {
     globals.first_name = firstnameController.text;
     globals.last_name = lastnameController.text;
     globals.dob = dob;
-    globals.gender = selectedItem as String;
+    globals.gender = selectedItem == "Nam" ? "Male" : "Female";
 
     Navigator.pop(context);
     showMessage("Cập nhật thông tin thành công.");

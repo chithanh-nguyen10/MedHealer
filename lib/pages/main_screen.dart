@@ -5,6 +5,7 @@ import "package:localstorage/localstorage.dart";
 import 'package:tinyhealer/global.dart' as globals;
 import 'package:tinyhealer/pages/functional_pages/call_doctor.dart';
 import 'package:tinyhealer/pages/functional_pages/diagnostic_history.dart';
+import 'package:tinyhealer/pages/functional_pages/diagnostic_history_doctor.dart';
 
 import 'package:tinyhealer/pages/functional_pages/profile.dart';
 import 'package:tinyhealer/pages/functional_pages/diagnostic.dart';
@@ -58,6 +59,7 @@ class _MainScreenState extends State<MainScreen>  with TickerProviderStateMixin{
       globals.email = user.email!;
       globals.dob = docSnapshot.get("dob");
       globals.gender = docSnapshot.get("gender");
+      globals.type = docSnapshot.get("type");
       String anam = docSnapshot.get("anamnesis");
       globals.anamnesis = anam.split(",");
       if (globals.anamnesis.length == 1 && globals.anamnesis[0] == "") globals.anamnesis.removeAt(0);
@@ -200,7 +202,7 @@ class _MainScreenState extends State<MainScreen>  with TickerProviderStateMixin{
     final currentWidth = MediaQuery.of(context).size.width;
     var container;  
     if (currentPage == DrawerSections.home) {
-      if (globals.healthMatch != {} && globals.first_name != "" && globals.last_name != "" && globals.email != "" && globals.dob != "" && globals.gender != "" && globals.anamnesis != ["null"] && globals.avatar != "" && globals.anamHealthMatch != {}  && globals.familyanamHealthMatch != {} && !isLoading3) {
+      if (globals.healthMatch != {} && globals.first_name != "" && globals.last_name != "" && globals.email != "" && globals.dob != "" && globals.gender != "" && globals.anamnesis != ["null"] && globals.avatar != "" && globals.anamHealthMatch != {}  && globals.familyanamHealthMatch != {} && !isLoading3 && globals.type != "") {
         container = ProfilePage(
           info: [globals.first_name, globals.last_name, globals.email, globals.dob, globals.gender],
           onTap: onTap,
@@ -228,9 +230,14 @@ class _MainScreenState extends State<MainScreen>  with TickerProviderStateMixin{
         result: result
       );
     } else if (currentPage == DrawerSections.history) {
-      if (globals.symptomMatch != {})container = DiagnosticHistory(
-        changeMenu: changeMenu,
-      ); else container = LoadingPage();
+      if (globals.symptomMatch != {}){
+        if (globals.type == "normal") container = DiagnosticHistory(
+          changeMenu: changeMenu,
+        ); else container = DiagnosticHistoryDoctor(
+          changeMenu: changeMenu,
+        );
+      }
+      else container = LoadingPage();
     } else if (currentPage == DrawerSections.doctor) {
       container = CallDoctor();
     }
@@ -294,6 +301,8 @@ class _MainScreenState extends State<MainScreen>  with TickerProviderStateMixin{
                       currentPage == DrawerSections.history ? true : false, () => navigate(DrawerSections.history, "Lịch sử chẩn đoán")),
                   menuItem2(6, "Tìm bệnh viện", Icons.local_hospital_rounded,
                       currentPage == DrawerSections.map ? true : false, () => navigate(DrawerSections.map, "Tìm bệnh viện")),
+                  if (globals.type == "normal") menuItem2(8, "Liên hệ bác sĩ", Icons.add_call,
+                      currentPage == DrawerSections.doctor ? true : false, () => navigate(DrawerSections.doctor, "Tìm bệnh viện")),
                   Divider(),
                   menuItem2(3, "Cài đặt", Icons.settings_outlined,
                     currentPage == DrawerSections.settings ? true : false, () => navigate(DrawerSections.settings, "Cài đặt")),
@@ -343,7 +352,7 @@ class _MainScreenState extends State<MainScreen>  with TickerProviderStateMixin{
               currentPage == DrawerSections.history ? true : false),
           menuItem(6, "Tìm bệnh viên", Icons.local_hospital_rounded,
               currentPage == DrawerSections.map ? true : false),
-          menuItem(8, "Liên hệ bác sĩ", Icons.add_call,
+          if (globals.type == "normal") menuItem(8, "Liên hệ bác sĩ", Icons.add_call,
               currentPage == DrawerSections.doctor ? true : false),
           Divider(),
           menuItem(3, "Cài đặt", Icons.settings_outlined,

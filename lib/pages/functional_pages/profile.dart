@@ -51,14 +51,22 @@ class _ProfilePageState extends State<ProfilePage>  with SingleTickerProviderSta
             SizedBox(width: 20),
             CircleAvatar(
               radius: currentWidth >= 600 ? 45 + 45 * ((currentWidth - 600)/1200)  : 45,
-              backgroundImage: NetworkImage(globals.avatar)
+              backgroundColor: Colors.grey[500],
+              child: CircleAvatar(
+                radius: currentWidth >= 600 ? 43.3 + 43.3 * ((currentWidth - 600)/1200)  : 43.3,
+                backgroundImage: NetworkImage(globals.avatar)
+              )
             ),
             SizedBox(width: 15),
             Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(globals.last_name + " " + globals.first_name, style: TextStyle(fontSize:currentWidth >= 600 ? 19 + 19 * ((currentWidth - 600)/600)  : 19, fontWeight: FontWeight.bold)),
+                Row(children: [
+                  Text(globals.last_name + " " + globals.first_name, style: TextStyle(fontSize:currentWidth >= 600 ? 19 + 19 * ((currentWidth - 600)/600)  : 19, fontWeight: FontWeight.bold)),
+                  SizedBox(width: 5),
+                  if (globals.type == "doctor") Icon(color: Colors.black, Icons.medical_services_outlined)
+                ],),
                 Text(globals.email, style: TextStyle(fontSize:currentWidth >= 600 ? 16 + 16 * ((currentWidth - 600)/600)  : 16)),
               ],
             )

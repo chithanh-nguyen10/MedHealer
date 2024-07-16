@@ -13,6 +13,8 @@ String pass = "";
 String dob = "";
 String gender = "";
 String avatar = "";
+String type = "";
+int currentid = 0;
 List<String> anamnesis = ["null"];
 List<String> familyanamnesis = [];
 
@@ -53,7 +55,7 @@ const Map<String, String> types = {
 };
 
 const Map<String, String> healthTypes = {
-  "in" : "Nôị",
+  "in" : "Nội",
   "out" : "Ngoại",
 };
 

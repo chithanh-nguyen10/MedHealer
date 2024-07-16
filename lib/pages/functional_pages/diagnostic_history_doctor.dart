@@ -1,23 +1,23 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:tinyhealer/global.dart' as globals;
 import 'package:flutter/material.dart';
-import 'package:tinyhealer/pages/functional_pages/display_history.dart';
+import 'package:tinyhealer/pages/functional_pages/display_history_doctor.dart';
 
-class DiagnosticHistory extends StatefulWidget {
+class DiagnosticHistoryDoctor extends StatefulWidget {
   final Function(String, bool) changeMenu;
-  DiagnosticHistory({required this.changeMenu});
+  DiagnosticHistoryDoctor({required this.changeMenu});
 
   @override
-  _DiagnosticHistoryState createState() => _DiagnosticHistoryState();
+  _DiagnosticHistoryDoctorState createState() => _DiagnosticHistoryDoctorState();
 }
 
-class _DiagnosticHistoryState extends State<DiagnosticHistory>
+class _DiagnosticHistoryDoctorState extends State<DiagnosticHistoryDoctor>
     with TickerProviderStateMixin {
   bool? historyEmpty;
   bool ready = false;
   List<HistoryItem> historyData = [];
   late bool isVertify;
-  late String symptoms, result, id, correctRes, docid;
+  late String symptoms, result, id, correctRes, docid, doctorResult, otherResult;
 
   @override
   void initState() {
@@ -68,6 +68,8 @@ class _DiagnosticHistoryState extends State<DiagnosticHistory>
         docid: document.id,
         correctRes: data['true-result'] ?? "null",
         time: data['time'],
+        doctorRes: data["doctor-results"],
+        otherRes: data["doctor-other-results"]
       );
       historyData.add(newItem);
     }
@@ -135,6 +137,8 @@ class _DiagnosticHistoryState extends State<DiagnosticHistory>
                         correctRes = item.correctRes;
                         id = idTransform(item.id);
                         docid = item.docid;
+                        doctorResult = item.doctorRes;
+                        otherResult = item.otherRes;
                         globals.historyState = "display";
                       });
                     },
@@ -154,7 +158,7 @@ class _DiagnosticHistoryState extends State<DiagnosticHistory>
                               ),
                             ),
                             SizedBox(width: 10),
-                            Container(
+                            if (globals.type == "normal") Container(
                               width: 10.0,
                               height: 10.0,
                               decoration: BoxDecoration(
@@ -164,8 +168,8 @@ class _DiagnosticHistoryState extends State<DiagnosticHistory>
                                 shape: BoxShape.circle,
                               ),
                             ),
-                            SizedBox(width: 5),
-                            Text(
+                            if (globals.type == "normal") SizedBox(width: 5),
+                            if (globals.type == "normal") Text(
                               item.isVertify ? "Đã xác nhận" : "Chưa xác nhận",
                               style: TextStyle(
                                 color: Colors.grey[700],
@@ -200,13 +204,14 @@ class _DiagnosticHistoryState extends State<DiagnosticHistory>
             },
           );
         } else {
-          return DisplayHistory(
+          return DisplayHistoryDoctor(
             id: id,
             correctRes: correctRes,
-            isVertify: isVertify,
             symptoms: symptoms,
             result: result,
             docid: docid,
+            doctorRes: doctorResult,
+            otherRes: otherResult,
           );
         }
       }
@@ -226,6 +231,8 @@ class HistoryItem {
   String correctRes;
   String docid;
   String time;
+  String doctorRes;
+  String otherRes;
 
   HistoryItem({
     required this.id,
@@ -235,6 +242,8 @@ class HistoryItem {
     required this.docid,
     required this.time,
     this.correctRes = "null",
+    required this.doctorRes,
+    required this.otherRes,
   });
 
   @override

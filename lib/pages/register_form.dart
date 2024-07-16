@@ -230,6 +230,7 @@ class _RegisterFormState extends State<RegisterForm>  with TickerProviderStateMi
       "registered" : true,
       "anamnesis" : anamnesis,
       "family-anamnesis" : "",
+      "type" : "normal",
       "image" : "https://firebasestorage.googleapis.com/v0/b/tinyhealer-30c94.appspot.com/o/default-avatar.png?alt=media&token=b702495f-f559-4b3b-8075-af6fbe9cc3f3"
     };
     await _firestore.collection('users').doc(user.email!).set(data);
@@ -464,11 +465,11 @@ class _RegisterFormState extends State<RegisterForm>  with TickerProviderStateMi
                   Expanded(child:
                 MyButton(
                 onTap: back,
-                text: "Back"
+                text: "Quay lại"
               )),
               Expanded(child: MyButton(
                 onTap: completeRegister,
-                text: "Register"
+                text: "Hoàn tất"
               ))])),
             ]
         )

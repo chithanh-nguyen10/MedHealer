@@ -50,6 +50,7 @@ dependencies:
   http: ^1.2.1
   url_launcher: ^6.3.0
   rename: ^3.0.2
+  timezone: ^0.9.4
 
 flutter_launcher_icons:
   android: "launcher_icon"

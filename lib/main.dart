@@ -7,6 +7,7 @@ import 'pages/auth_page.dart';
 import 'package:tinyhealer/global.dart' as globals;
 import 'package:localstorage/localstorage.dart';
 import "package:flutter/services.dart";
+import 'package:timezone/data/latest.dart' as tz;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -66,6 +67,7 @@ void main() async {
   }
   print(localStorage.getItem('EMAIL'));
   print(localStorage.getItem('PASS'));
+  tz.initializeTimeZones();
 
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,

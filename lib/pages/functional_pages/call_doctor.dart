@@ -60,17 +60,17 @@ class _CallDoctorState extends State<CallDoctor> {
                     DoctorInfo current = doctorList[index];
                     return Column(children: [
                       Row(children: [
-                        const SizedBox(width: 5),
+                        const SizedBox(width: 8),
                         CircleAvatar(
-                          radius: 60,
+                          radius: 55,
                           backgroundColor: Colors.black,
                           child: CircleAvatar(
-                            radius: 58.5,
+                            radius: 53.5,
                             backgroundImage: NetworkImage(
                               current.image,)
                           )
                         ),
-                        const SizedBox(width: 5),
+                        const SizedBox(width: 10),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,

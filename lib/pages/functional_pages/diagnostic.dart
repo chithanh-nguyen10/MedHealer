@@ -38,9 +38,25 @@ class _DiagnosticPageState extends State<DiagnosticPage>
   bool isDiagnose = false;
   List<dynamic> result = [];
 
+  bool isStomatchache = false;
+
   void toggleCheckbox(int tabIndex, int itemIndex, bool value) {
     setState(() {
-      checkboxValuesList[tabIndex][itemIndex] = value;
+      if (tabIndex == 0 && 0<=itemIndex && itemIndex<=2 && value == true){
+        for (int i = 0;i<=2;++i) {checkboxValuesList[tabIndex][i] = false;}
+        checkboxValuesList[tabIndex][itemIndex] = true;
+      }
+      else if (tabIndex == 0 && 3<=itemIndex && itemIndex<=6 && value == true){
+        for (int i = 3;i<=6;++i) {checkboxValuesList[tabIndex][i] = false;}
+        checkboxValuesList[tabIndex][itemIndex] = true;
+      }
+      else if (tabIndex == 0 && 14<=itemIndex && itemIndex<=16 && value == true){
+        for (int i = 14;i<=16;++i) {checkboxValuesList[tabIndex][i] = false;}
+        checkboxValuesList[tabIndex][itemIndex] = true;
+      }
+      else {
+        checkboxValuesList[tabIndex][itemIndex] = value;
+      }
     });
   }
 
@@ -63,19 +79,7 @@ class _DiagnosticPageState extends State<DiagnosticPage>
         }
       }
     }
-    int len = symptoms.length, t = 0;
-    if (symptoms.contains("bodyskin01")) ++t;
-    if (symptoms.contains("bodyskin02")) ++t;
-    if (symptoms.contains("bodyskin03")) ++t;
-    if (symptoms.contains("bodyskin08")) ++t;
-    if (t > 0) len -= t - 1;
-    if (symptoms.contains("bodyskin12")) --len;
-    if (symptoms.contains("bodyskin29")) --len;
-    if (symptoms.contains("ear10")) --len;
-    if (symptoms.contains("excrete05")) --len;
-    if (symptoms.contains("nose03")) --len;
-    if (symptoms.contains("respire02")) --len;
-    if (symptoms.contains("respire03")) --len;
+    int len = symptoms.length;
     // print(symptoms);
 
     if (len < 3) {
@@ -96,7 +100,7 @@ class _DiagnosticPageState extends State<DiagnosticPage>
       "anamnesis": [],
       "familyanamnesis": []
     };
-    // print(globals.familyanamnesis);
+    print(symptoms);
 
     final headers = {
       "Content-Type": "application/json",
@@ -110,7 +114,8 @@ class _DiagnosticPageState extends State<DiagnosticPage>
     );
 
     if (response.statusCode == 200) {
-      result = json.decode(response.body)["health_problems"];
+      result = json.decode(response.body)["results"];
+      print(result);
       int id;
       String symp = "", res = "";
       bool isVertify = false;
@@ -268,7 +273,7 @@ class _DiagnosticPageState extends State<DiagnosticPage>
           onTap: widget.onTap,
           searchMap: widget.searchMap,
         );
-      else
+      else{
         return Column(
           children: [
             const SizedBox(height: 20),
@@ -352,27 +357,52 @@ class _DiagnosticPageState extends State<DiagnosticPage>
                         (tabIndex) => ListView.builder(
                           itemCount: checklistItemsList[tabIndex].length,
                           itemBuilder: (context, itemIndex) {
-                            return CheckboxListTile(
+                            if (tabIndex == 0 && itemIndex == 0) {
+                              return Column(
+                                children: [
+                                  CheckboxListTile(
+                                    value: isStomatchache,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        isStomatchache = value ?? false;
+                                      });
+                                    },
+                                    title: Text(
+                                      "Tôi có triệu chứng đau bụng?",
+                                      style: TextStyle(
+                                          fontSize: currentWidth >= 600
+                                              ? 17 +
+                                                  17 *
+                                                      ((currentWidth - 600) /
+                                                          1000)
+                                              : 17),
+                                    ),
+                                  ),
+                                  Visibility(visible: isStomatchache, child: CheckboxListTile(
+                                    value: checkboxValuesList[tabIndex]
+                                        [itemIndex],
+                                    onChanged: (value) {
+                                      toggleCheckbox(
+                                          tabIndex, itemIndex, value ?? false);
+                                    },
+                                    title: Text(
+                                      checklistItemsList[tabIndex][itemIndex],
+                                      style: TextStyle(
+                                          fontSize: currentWidth >= 600
+                                              ? 17 +
+                                                  17 *
+                                                      ((currentWidth - 600) /
+                                                          1000)
+                                              : 17),
+                                    ),
+                                  ))
+                                ],
+                              );
+                            }
+                            return Visibility(visible: (tabIndex == 0 && isStomatchache) || tabIndex != 0, child:CheckboxListTile(
                               value: checkboxValuesList[tabIndex][itemIndex],
                               onChanged: (value) {
-                                if (tabIndex == 2 && itemIndex == 0){
-                                  if (value == false){
-                                    toggleCheckbox(2, 0, false);
-                                    toggleCheckbox(2, 1, false);
-                                    toggleCheckbox(2, 2, false);
-                                    toggleCheckbox(2, 3, false);
-                                  } else{
-                                    toggleCheckbox(2, 0, true);
-                                  }
-                                } else if (tabIndex == 2 && 1 <= itemIndex && itemIndex <= 3){
-                                    if (value == false){
-                                      toggleCheckbox(tabIndex, itemIndex, false);
-                                    } else{
-                                      toggleCheckbox(tabIndex, itemIndex, true);
-                                      toggleCheckbox(2, 0, true);
-                                    }
-                                }
-                                else toggleCheckbox(
+                                toggleCheckbox(
                                     tabIndex, itemIndex, value ?? false);
                               },
                               title: Text(
@@ -383,7 +413,7 @@ class _DiagnosticPageState extends State<DiagnosticPage>
                                             17 * ((currentWidth - 600) / 1000)
                                         : 17),
                               ),
-                            );
+                            ));
                           },
                         ),
                       )),
@@ -437,7 +467,7 @@ class _DiagnosticPageState extends State<DiagnosticPage>
                   onTap: diagnose,
                 ))
           ],
-        );
+        );}
     } else
       return Center(child: CircularProgressIndicator());
   }

@@ -260,6 +260,14 @@ class _DisplayHospitalState extends State<DisplayHospital> {
                       text: "Đường đi",
                     ),
                     const SizedBox(width: 10),
+                    if (hospital.website != "") CircleButton(
+                      onTap: () {
+                        launchUrl(Uri.parse(hospital.website));
+                      },
+                      icon: Icons.public,
+                      text: "Trang web",
+                    ),
+                    const SizedBox(width: 10),
                   ],
                 ),
                 if (index != widget.searchResult.length - 1)

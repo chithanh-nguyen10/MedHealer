@@ -44,14 +44,11 @@ Map<String, String> anamHealthMatch = {};
 Map<String, String> familyanamHealthMatch = {};
 
 const Map<String, String> types = {
-  "breath": "Hô hấp",
-  "digestion" : "Tiêu hoá",
-  "feverinfection" : "Truyền nhiễm",
-  "heart" : "Tim mạch",
-  "nervementality" : "Thần kinh",
-  "other" : "Khác",
-  "painful" : "Đau",
-  "skin" : "Da"
+  "stomachace" : "Đau bụng",
+  "fever" : "Sốt",
+  "bowel" : "Tiêu",
+  "vomit" : "Nôn",
+  "yskin" : "Vàng da"
 };
 
 const Map<String, String> healthTypes = {

@@ -24,7 +24,7 @@ class _ChangeInfoState extends State<ChangeInfo> {
   void initState() {
     super.initState();
     extractDate = dob.split("/");
-    selectedItem = globals.gender;
+    selectedItem = globals.gender == "Male" ? "Nam" : "Nữ";
   }
 
   @override

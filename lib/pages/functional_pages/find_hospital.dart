@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:tinyhealer/components/my_button.dart';
+import 'package:geocoding/geocoding.dart';
 import 'dart:convert';
 import 'package:tinyhealer/global.dart' as globals;
 import 'package:tinyhealer/pages/functional_pages/display_hospital.dart';
@@ -59,6 +60,13 @@ class _FindHospitalState extends State<FindHospital> with SingleTickerProviderSt
   void initState() {
     super.initState();
 
+    _getCurrentLocation().then((_) async{
+      List<Placemark> p = await placemarkFromCoordinates(
+        _currentPosition.latitude, _currentPosition.longitude);
+      Placemark place = p[0];
+      print(place.administrativeArea);
+    });
+
     fetchNames().then((_){
       checklistItemsList = checkListData;
       _tabController = TabController(length: checklistItemsList.length, vsync: this);
@@ -75,9 +83,8 @@ class _FindHospitalState extends State<FindHospital> with SingleTickerProviderSt
           typesList.clear();
           Set<String> typeSets = {};
           for (int i = 0; i < widget.result.length; ++i){
-            if (widget.result[i].startsWith("ent")) typeSets.add("ent");
-            else if (widget.result[i].startsWith("digest")) typeSets.add("digest");
-            else if (widget.result[i].startsWith("respir")) typeSets.add("respir");
+            if (widget.result[i].startsWith("in")) typeSets.add("in");
+            else if (widget.result[i].startsWith("out")) typeSets.add("out");
           }
           typesList = typeSets.toList();
           ready = false;
@@ -141,9 +148,8 @@ class _FindHospitalState extends State<FindHospital> with SingleTickerProviderSt
       for (int j = 0;j<checkListData[i].length;++j){
         if (checkboxValuesList[i][j] == true){
           ++checknum;checkedData.add(idData[i][j]);
-          if(i == 0) typeSets.add("ent");
-          else if(i == 1) typeSets.add("digest");
-          else if(i == 2) typeSets.add("respir");
+          if(i == 0) typeSets.add("in");
+          else if(i == 1) typeSets.add("out");
         }
       }
     }
@@ -153,7 +159,7 @@ class _FindHospitalState extends State<FindHospital> with SingleTickerProviderSt
 
   void searchHospitals() {
     _getCurrentLocation().then((_) async {
-      if (widget.result[0] == "null") showDialog(
+      showDialog(
         context: context,
         barrierDismissible: false, // Prevent user from dismissing the dialog
         builder: (context) {
@@ -181,26 +187,54 @@ class _FindHospitalState extends State<FindHospital> with SingleTickerProviderSt
             data["rating"],
             data["lat"],
             data["lon"],
-            skills
+            skills,
+            data["website"],
           );
           searchResult.add(newItem);
           
         }
       }
       searchResult.sort(compare);
-      searchResult = searchResult.sublist(0, 20);
+      print(searchResult);
+      searchResult = searchResult.sublist(0, 25);
       routeResult.clear();
       print(searchResult);
+      List<Map<String, double>> destinations = [];
       for (int i = 0; i < searchResult.length;++i){
-        _calculateRoute(
-          searchResult[i].lat,
-          searchResult[i].lon,
-          _currentPosition.latitude, _currentPosition.longitude 
-        ).then((_){
-          routeResult.add(result);
-          print(result.distance);
-        });
-        await Future.delayed(const Duration(milliseconds: 500));
+        destinations.add({"lat": searchResult[i].lat, "lon": searchResult[i].lon});
+      }
+
+      var apiKey = 'AIzaSyAzHaeKsHTM0NCxTe1KLFo7l4bPppra6tM';
+      var url = 'https://maps.googleapis.com/maps/api/distancematrix/json?';
+
+      url += 'origins=${_currentPosition.latitude},${_currentPosition.longitude}';
+
+      var destinationParams = '';
+      destinations.forEach((dest) {
+        destinationParams += '${dest['lat']},${dest['lon']}|';
+      });
+      destinationParams = destinationParams.substring(0, destinationParams.length - 1);
+      url += "&destinations=";
+      url += destinationParams;
+      print(destinationParams);
+      url += '&mode=driving';
+      url += '&language=vi';
+      url += '&key=$apiKey';
+
+      var response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        for (var v in data["rows"][0]["elements"]){
+          double distance = 1.0*v["distance"]["value"]/1000;
+          distance = double.parse(distance.toStringAsFixed(1));
+          double duration = 1.0*v["duration"]["value"]/60;
+          duration = double.parse(distance.toStringAsFixed(0));
+          print(duration);
+          routeResult.add(RouteInfo(distance, duration));
+        }
+      } else {
+        print('Error: ${response.reasonPhrase}');
       }
       Navigator.pop(context);
       setState(() {
@@ -249,37 +283,6 @@ class _FindHospitalState extends State<FindHospital> with SingleTickerProviderSt
     }).catchError((e) {
       print(e);
     });
-  }
-
-  Future<void> _calculateRoute(
-    double startLatitude,
-    double startLongitude,
-    double destinationLatitude,
-    double destinationLongitude,
-  ) async {
-    const String apiKey = 'AIzaSyAzHaeKsHTM0NCxTe1KLFo7l4bPppra6tM';
-    final url =
-        'https://maps.googleapis.com/maps/api/directions/json?origin=$startLatitude,$startLongitude&destination=$destinationLatitude,$destinationLongitude&key=$apiKey';
-
-    final response = await http.get(Uri.parse(url));
-
-    if (response.statusCode == 200) {
-      final jsonResponse = json.decode(response.body);
-      final routes = jsonResponse['routes'];
-      if (routes.isNotEmpty) {
-        final legs = routes[0]['legs'];
-        if (legs.isNotEmpty) {
-          final distance = legs[0]['distance']['value'];
-          final duration = legs[0]['duration']['value'];
-          result = RouteInfo(
-            double.parse((distance * 1.0 / 1000.0).toStringAsFixed(1)),
-            double.parse((duration * 1.0 / 60.0).toStringAsFixed(0)),
-          );
-        }
-      }
-    } else {
-      throw Exception('Failed to load directions');
-    }
   }
 
   void showMessage(String mess){
@@ -387,7 +390,7 @@ class _FindHospitalState extends State<FindHospital> with SingleTickerProviderSt
       ]
     );} else if (isSearch) return DisplayHospital(
       searchResult: searchResult.reversed.toList(),
-      routeResult: routeResult.reversed.toList(),
+      routeResult: routeResult.toList(),
       currlat: _currentPosition.latitude,
       currlon: _currentPosition.longitude
     );
@@ -408,6 +411,7 @@ class HospitalInfo{
   double rating;
   double lat, lon;
   List<String> skills;
+  String website;
 
   HospitalInfo(
     this.name,
@@ -417,7 +421,8 @@ class HospitalInfo{
     this.rating,
     this.lat,
     this.lon,
-    this.skills
+    this.skills,
+    this.website
   );
 
   @override

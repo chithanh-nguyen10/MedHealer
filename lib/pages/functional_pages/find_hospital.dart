@@ -30,7 +30,7 @@ double _coordinateDistance(lat1, lon1, lat2, lon2) {
   return 12742 * asin(sqrt(a));
 }
 
-class _FindHospitalState extends State<FindHospital> with SingleTickerProviderStateMixin{
+class _FindHospitalState extends State<FindHospital> with TickerProviderStateMixin{
   late Position _currentPosition;
   String _currentAddress = "";
   late PolylinePoints polylinePoints;
@@ -53,6 +53,8 @@ class _FindHospitalState extends State<FindHospital> with SingleTickerProviderSt
   List<HospitalInfo> searchResult = [];
   List<RouteInfo> routeResult = [];
 
+  String city = "";
+
   bool ready = false;
   bool isSearch = false;
 
@@ -60,12 +62,7 @@ class _FindHospitalState extends State<FindHospital> with SingleTickerProviderSt
   void initState() {
     super.initState();
 
-    _getCurrentLocation().then((_) async{
-      List<Placemark> p = await placemarkFromCoordinates(
-        _currentPosition.latitude, _currentPosition.longitude);
-      Placemark place = p[0];
-      print(place.administrativeArea);
-    });
+    
 
     fetchNames().then((_){
       checklistItemsList = checkListData;
@@ -78,7 +75,17 @@ class _FindHospitalState extends State<FindHospital> with SingleTickerProviderSt
         ),
       );
       setState(() {
-        ready = true;
+        _getCurrentLocation().then((_) async{
+          List<Placemark> p = await placemarkFromCoordinates(
+            _currentPosition.latitude, _currentPosition.longitude);
+          Placemark place = p[0];
+          city = place.administrativeArea.toString();
+          print(city);
+          setState(() {
+            ready = true;
+          });
+        });
+        
         if (widget.result[0] != "null"){
           typesList.clear();
           Set<String> typeSets = {};
@@ -87,6 +94,7 @@ class _FindHospitalState extends State<FindHospital> with SingleTickerProviderSt
             else if (widget.result[i].startsWith("out")) typeSets.add("out");
           }
           typesList = typeSets.toList();
+          
           ready = false;
           searchHospitals();
         }
@@ -244,6 +252,94 @@ class _FindHospitalState extends State<FindHospital> with SingleTickerProviderSt
     });
   }
 
+  void searchHospitalsHN() {
+    _getCurrentLocation().then((_) async {
+      showDialog(
+        context: context,
+        barrierDismissible: false, // Prevent user from dismissing the dialog
+        builder: (context) {
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        },
+      );
+      final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+      QuerySnapshot querySnapshot = await _firestore
+        .collection('hospitals-hn')
+        .get();
+      List<DocumentSnapshot> documents = querySnapshot.docs;
+      searchResult.clear();
+
+      for (int i = 0; i < documents.length; ++i) {
+        var data = documents[i].data() as Map<String, dynamic>;
+        List<String> skills = data["skills"].split(",");
+        if (checkSubList(typesList, skills)){
+          HospitalInfo newItem = HospitalInfo(
+            data["name"],
+            data["type"],
+            data["addr"],
+            data["rank"],
+            data["rating"],
+            data["lat"],
+            data["lon"],
+            skills,
+            data["website"],
+          );
+          searchResult.add(newItem);
+          
+        }
+      }
+      searchResult.sort(compare);
+      print(searchResult);
+      searchResult = searchResult.sublist(0, 25);
+      routeResult.clear();
+      print(searchResult);
+      List<Map<String, double>> destinations = [];
+      for (int i = 0; i < searchResult.length;++i){
+        destinations.add({"lat": searchResult[i].lat, "lon": searchResult[i].lon});
+      }
+
+      var apiKey = 'AIzaSyAzHaeKsHTM0NCxTe1KLFo7l4bPppra6tM';
+      var url = 'https://maps.googleapis.com/maps/api/distancematrix/json?';
+
+      url += 'origins=${_currentPosition.latitude},${_currentPosition.longitude}';
+
+      var destinationParams = '';
+      destinations.forEach((dest) {
+        destinationParams += '${dest['lat']},${dest['lon']}|';
+      });
+      destinationParams = destinationParams.substring(0, destinationParams.length - 1);
+      url += "&destinations=";
+      url += destinationParams;
+      print(destinationParams);
+      url += '&mode=driving';
+      url += '&language=vi';
+      url += '&key=$apiKey';
+
+      var response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        for (var v in data["rows"][0]["elements"]){
+          double distance = 1.0*v["distance"]["value"]/1000;
+          distance = double.parse(distance.toStringAsFixed(1));
+          double duration = 1.0*v["duration"]["value"]/60;
+          duration = double.parse(distance.toStringAsFixed(0));
+          print(duration);
+          routeResult.add(RouteInfo(distance, duration));
+        }
+      } else {
+        print('Error: ${response.reasonPhrase}');
+      }
+      Navigator.pop(context);
+      setState(() {
+        ready = true;
+        isSearch = true;
+      });
+    });
+  }
+  
+
   int compare(HospitalInfo a, HospitalInfo b){
     const double ESP = 0.8;
 
@@ -383,7 +479,11 @@ class _FindHospitalState extends State<FindHospital> with SingleTickerProviderSt
               readData();
               if (checknum == 0) showMessage("Bạn chưa chọn bệnh!");
               else if (checknum > 10) showMessage("Bạn chỉ được chọn tối đa 10 bệnh");
-              else searchHospitals();
+              else{
+                if (city == "Ho Chi Minh City") searchHospitals();
+                else if (city == "Ha Noi") searchHospitalsHN();
+                else searchHospitals();
+              }
             },
           )
         )
